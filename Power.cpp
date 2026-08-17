@@ -83,6 +83,8 @@ namespace impl {
 #ifdef MODE_EXT
 extern bool isDeviceSpecificModeSupported(Mode type, bool* _aidl_return);
 extern bool setDeviceSpecificMode(Mode type, bool enabled);
+extern bool isDeviceSpecificBoostSupported(Boost type, bool* _aidl_return);
+extern bool setDeviceSpecificBoost(Boost type, int32_t durationMs);
 #endif
 
 void setInteractive(bool interactive) {
@@ -166,11 +168,25 @@ ndk::ScopedAStatus Power::isModeSupported(Mode type, bool* _aidl_return) {
 ndk::ScopedAStatus Power::setBoost(Boost type, int32_t durationMs) {
     LOG(INFO) << "Power setBoost: " << static_cast<int32_t>(type)
                 << ", duration: " << durationMs;
+
+#ifdef MODE_EXT
+    if (setDeviceSpecificBoost(type, durationMs)) {
+        return ndk::ScopedAStatus::ok();
+    }
+#endif
+
     return ndk::ScopedAStatus::ok();
 }
 
 ndk::ScopedAStatus Power::isBoostSupported(Boost type, bool* _aidl_return) {
     LOG(INFO) << "Power isBoostSupported: " << static_cast<int32_t>(type);
+
+#ifdef MODE_EXT
+    if (isDeviceSpecificBoostSupported(type, _aidl_return)) {
+        return ndk::ScopedAStatus::ok();
+    }
+#endif
+
     *_aidl_return = false;
     return ndk::ScopedAStatus::ok();
 }
